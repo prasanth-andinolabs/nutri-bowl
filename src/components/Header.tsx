@@ -12,6 +12,8 @@ type HeaderProps = {
   isGuestCheckout: boolean;
   onNavigate: (path: string) => void;
   onCartClick: () => void;
+  onOpenAuth: () => void;
+  onCustomerLogout: () => void;
 };
 
 export function Header({
@@ -20,8 +22,11 @@ export function Header({
   isCartRoute,
   isSubscriptionsRoute,
   cartCount,
+  customerProfile,
   onNavigate,
   onCartClick,
+  onOpenAuth,
+  onCustomerLogout,
 }: HeaderProps) {
   return (
     <header className="bg-white/90 backdrop-blur border-b border-gray-100 sticky top-0 z-50">
@@ -40,6 +45,7 @@ export function Header({
           </div>
         </div>
         {!isAdminRoute && (
+          <>
           <div className="hidden sm:flex items-center gap-2">
             <button
               type="button"
@@ -87,7 +93,57 @@ export function Header({
                 </span>
               )}
             </button>
+            {customerProfile ? (
+              <button
+                type="button"
+                onClick={onCustomerLogout}
+                className="text-sm font-semibold text-green-700 border border-green-200 px-4 py-2 rounded-full hover:bg-green-50"
+              >
+                Sign out
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenAuth}
+                className="text-sm font-semibold text-green-700 border border-green-200 px-4 py-2 rounded-full hover:bg-green-50"
+              >
+                Sign in
+              </button>
+            )}
           </div>
+          <div className="flex sm:hidden items-center gap-2">
+            {customerProfile ? (
+              <button
+                type="button"
+                onClick={onCustomerLogout}
+                className="text-sm font-semibold text-green-700 border border-green-200 px-3 py-1.5 rounded-full hover:bg-green-50"
+              >
+                Sign out
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenAuth}
+                className="text-sm font-semibold text-green-700 border border-green-200 px-3 py-1.5 rounded-full hover:bg-green-50"
+              >
+                Sign in
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onCartClick}
+              className="relative p-2 text-green-700 rounded-full hover:bg-green-50"
+              aria-label="Cart"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-green-600 text-white text-[10px] font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-1">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+          </>
         )}
         {isAdminRoute && (
           <span className="text-sm font-semibold text-green-700 bg-green-50 px-4 py-2 rounded-full">

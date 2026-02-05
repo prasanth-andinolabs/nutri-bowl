@@ -185,15 +185,17 @@ export function CartPage({
                 <p className="text-xs text-gray-600">Fast, simple, COD only</p>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600 mb-4">
-              <span className="px-3 py-1 rounded-full border border-green-100 bg-green-50 text-green-700 font-semibold">
-                1. Sign in or guest
-              </span>
-              <span>→</span>
-              <span className="px-3 py-1 rounded-full border border-gray-200 bg-white">
-                2. Delivery details
-              </span>
-            </div>
+            {!customerProfile && (
+              <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600 mb-4">
+                <span className="px-3 py-1 rounded-full border border-green-100 bg-green-50 text-green-700 font-semibold">
+                  1. Sign in or guest
+                </span>
+                <span>→</span>
+                <span className="px-3 py-1 rounded-full border border-gray-200 bg-white">
+                  2. Delivery details
+                </span>
+              </div>
+            )}
             <div className="space-y-4">
               {!cartHydrated && (
                 <div className="rounded-2xl border border-gray-100 bg-white p-4 space-y-3 animate-pulse">
@@ -202,13 +204,13 @@ export function CartPage({
                   <div className="h-10 bg-gray-200 rounded" />
                 </div>
               )}
-              <div className="rounded-2xl border border-gray-100 bg-white p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">Login for faster checkout</p>
-                    <p className="text-xs text-gray-600">Save details, track orders, reuse address</p>
-                  </div>
-                  {!customerProfile && (
+              {!customerProfile && (
+                <div className="rounded-2xl border border-gray-100 bg-white p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">Login for faster checkout</p>
+                      <p className="text-xs text-gray-600">Save details, track orders, reuse address</p>
+                    </div>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
@@ -225,28 +227,7 @@ export function CartPage({
                         Create account
                       </button>
                     </div>
-                  )}
-                  {customerProfile && (
-                    <button
-                      type="button"
-                      className="text-xs text-green-700 border border-green-200 px-3 py-1 rounded-full hover:bg-green-100"
-                      onClick={onCustomerLogout}
-                    >
-                      Sign out
-                    </button>
-                  )}
-                </div>
-                {customerProfile ? (
-                  <div className="mt-4 flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-3 border border-gray-100">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{customerProfile.name}</p>
-                      <p className="text-xs text-gray-600">+91 {customerProfile.phone}</p>
-                    </div>
-                    <span className="text-xs text-green-700 bg-green-100 px-3 py-1 rounded-full">
-                      Signed in
-                    </span>
                   </div>
-                ) : (
                   <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-gray-600">
                     <span>Or continue without login.</span>
                     <button
@@ -257,11 +238,25 @@ export function CartPage({
                       Continue as guest
                     </button>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
               {!customerProfile && !isGuestCheckout && (
                 <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
                   Choose Sign in or Continue as guest to enter delivery details.
+                </div>
+              )}
+              {customerProfile && (
+                <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 flex items-center justify-between">
+                  <p className="text-sm text-gray-700">
+                    Signed in as <span className="font-semibold">{customerProfile.name}</span>
+                  </p>
+                  <button
+                    type="button"
+                    className="text-xs text-green-700 border border-green-200 px-3 py-1 rounded-full hover:bg-green-50"
+                    onClick={onCustomerLogout}
+                  >
+                    Sign out
+                  </button>
                 </div>
               )}
 

@@ -499,6 +499,8 @@ function App() {
             openAuthModal('signin');
           }
         }}
+        onOpenAuth={() => openAuthModal('signin')}
+        onCustomerLogout={handleCustomerLogout}
       />
 
       {isAdminRoute ? (
