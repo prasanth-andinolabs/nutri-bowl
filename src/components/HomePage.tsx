@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Minus, Phone, Plus, Store } from 'lucide-react';
 import type { StoreItem } from '../types';
-import { formatAmountWithUnit, formatWeightFromGrams } from '../utils/format';
+import { formatAmountWithUnit, formatPriceWithAmount, formatWeightFromGrams } from '../utils/format';
 
 type HomePageProps = {
   inventoryLoading: boolean;
@@ -264,7 +264,7 @@ export function HomePage({
                             {group.name}
                           </button>
                           <p className="text-sm text-gray-600">
-                            ₹{unitPrice} / {formatWeightFromGrams(selectedWeight)}
+                            {formatPriceWithAmount(unitPrice, formatWeightFromGrams(selectedWeight))}
                           </p>
                         </div>
                         <span className="text-xs font-semibold text-green-700 bg-green-50 px-3 py-1 rounded-full">
@@ -370,7 +370,7 @@ export function HomePage({
                             {group.name}
                           </button>
                           <p className="text-sm text-gray-600">
-                            ₹{unitPrice} / {formatWeightFromGrams(selectedWeight)}
+                            {formatPriceWithAmount(unitPrice, formatWeightFromGrams(selectedWeight))}
                           </p>
                         </div>
                         <span className="text-xs font-semibold text-purple-700 bg-purple-50 px-3 py-1 rounded-full">
@@ -476,7 +476,7 @@ export function HomePage({
                             {group.name}
                           </button>
                           <p className="text-sm text-gray-600">
-                            ₹{unitPrice} / {formatWeightFromGrams(selectedWeight)}
+                            {formatPriceWithAmount(unitPrice, formatWeightFromGrams(selectedWeight))}
                           </p>
                         </div>
                         <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-1 rounded-full">
@@ -579,7 +579,7 @@ export function HomePage({
                             {group.name}
                           </button>
                           <p className="text-sm text-gray-600">
-                            ₹{baseItem.price} / {formatAmountWithUnit(baseItem)}
+                            {formatPriceWithAmount(baseItem.price, formatAmountWithUnit(baseItem))}
                           </p>
                         </div>
                         <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full">
@@ -654,7 +654,7 @@ export function HomePage({
                             {group.name}
                           </button>
                           <p className="text-sm text-gray-600">
-                            ₹{baseItem.price} / {formatAmountWithUnit(baseItem)}
+                            {formatPriceWithAmount(baseItem.price, formatAmountWithUnit(baseItem))}
                           </p>
                         </div>
                         <span className="text-xs font-semibold text-green-700 bg-green-50 px-3 py-1 rounded-full">

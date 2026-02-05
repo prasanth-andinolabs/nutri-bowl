@@ -25,3 +25,13 @@ export function formatAmountWithUnit(item: StoreItem): string {
 export function formatWeightFromGrams(weightGrams: number): string {
   return weightGrams >= 1000 ? `${weightGrams / 1000} kg` : `${weightGrams} gm`;
 }
+
+/**
+ * Format price with amount for display. Omits " / 1 kg" when amount is 1 kg.
+ */
+export function formatPriceWithAmount(price: number, amountLabel: string): string {
+  if (amountLabel === '1 kg') {
+    return `₹${price}`;
+  }
+  return `₹${price} / ${amountLabel}`;
+}

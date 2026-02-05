@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Minus, Plus, ShoppingCart } from 'lucide-react';
 import type { CustomerProfile, StoreItem } from '../types';
-import { formatAmountWithUnit } from '../utils/format';
+import { formatAmountWithUnit, formatPriceWithAmount } from '../utils/format';
 
 type CartPageProps = {
   cartItems: Array<StoreItem & { qty: number; total: number }>;
@@ -401,7 +401,7 @@ export function CartPage({
                         <div>
                           <p className="font-semibold text-gray-900">{item.name}</p>
                           <p className="text-xs text-gray-600">
-                            ₹{item.price} / {formatAmountWithUnit(item)}
+                            {formatPriceWithAmount(item.price, formatAmountWithUnit(item))}
                           </p>
                         </div>
                         <button
