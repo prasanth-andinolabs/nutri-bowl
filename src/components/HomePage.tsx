@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Minus, Phone, Plus, Store } from 'lucide-react';
 import type { StoreItem } from '../types';
+import { formatAmountWithUnit, formatWeightFromGrams } from '../utils/format';
 
 type HomePageProps = {
   inventoryLoading: boolean;
@@ -45,17 +46,6 @@ export function HomePage({
 }: HomePageProps) {
   const [selectedWeights, setSelectedWeights] = useState<Record<string, number>>({});
   const hasTag = (item: StoreItem, tag: string) => item.tags?.includes(tag);
-  const formatWeight = (item: StoreItem) => {
-    if (item.weightGrams) {
-      return item.weightGrams >= 1000
-        ? `${item.weightGrams / 1000} kg`
-        : `${item.weightGrams} gm`;
-    }
-    return item.unit;
-  };
-  const formatWeightLabel = (item: StoreItem) => formatWeight(item);
-  const formatWeightFromGrams = (weightGrams: number) =>
-    weightGrams >= 1000 ? `${weightGrams / 1000} kg` : `${weightGrams} gm`;
   const weightOptions = [250, 500, 1000];
   const getPricePerKg = (item: StoreItem) => {
     if (item.weightGrams && item.weightGrams > 0) {
@@ -589,7 +579,7 @@ export function HomePage({
                             {group.name}
                           </button>
                           <p className="text-sm text-gray-600">
-                            ₹{baseItem.price} / {formatWeightLabel(baseItem)}
+                            ₹{baseItem.price} / {formatAmountWithUnit(baseItem)}
                           </p>
                         </div>
                         <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full">
@@ -664,7 +654,7 @@ export function HomePage({
                             {group.name}
                           </button>
                           <p className="text-sm text-gray-600">
-                            ₹{baseItem.price} / {formatWeightLabel(baseItem)}
+                            ₹{baseItem.price} / {formatAmountWithUnit(baseItem)}
                           </p>
                         </div>
                         <span className="text-xs font-semibold text-green-700 bg-green-50 px-3 py-1 rounded-full">

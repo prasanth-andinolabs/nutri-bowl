@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ClipboardList, Truck } from 'lucide-react';
+import { ClipboardList, Pencil, Truck } from 'lucide-react';
 import type { Order, OrderStatus, StoreItem } from '../types';
 import { fetchInventoryImages } from '../api/inventory';
 
@@ -88,6 +88,14 @@ export function AdminPage({
   const [imagesLoading, setImagesLoading] = useState(false);
   const [imagesError, setImagesError] = useState('');
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<StoreItem | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editCategory, setEditCategory] = useState<StoreItem['category']>('fruit');
+  const [editSubcategory, setEditSubcategory] = useState<StoreItem['subcategory']>('regular');
+  const [editUnit, setEditUnit] = useState<StoreItem['unit']>('kg');
+  const [editPrice, setEditPrice] = useState('');
+  const [editImage, setEditImage] = useState('');
+  const [editTags, setEditTags] = useState('');
 
   useEffect(() => {
     setCatalogDraft(inventory);
@@ -158,13 +166,32 @@ export function AdminPage({
       return;
     }
     const baseId = slugify(newName);
-    const id = `${baseId}-1kg`;
-    const sku = `${baseId.toUpperCase()}-1KG`;
-    const weightGrams = newCategory === 'fruit' || newCategory === 'dry' ? 1000 : undefined;
+    const isWeightCategory = newCategory === 'fruit' || newCategory === 'dry';
+    const weightGrams =
+      isWeightCategory && (newUnit === 'kg' || newUnit === 'g')
+        ? newUnit === 'kg'
+          ? 1000
+          : 500
+        : undefined;
+    const idSuffix =
+      weightGrams != null
+        ? weightGrams === 1000
+          ? '1kg'
+          : '500gm'
+        : newUnit;
+    const id = `${baseId}-${idSuffix}`;
+    const sku = `${baseId.toUpperCase()}-${idSuffix.toUpperCase()}`;
     const tags = newTags
       .split(',')
       .map((tag) => tag.trim())
       .filter(Boolean);
+    // Price label is "₹ per gm" or "₹ per kg" etc. Store as price for this row's amount.
+    // For kg: price entered is per kg → stored price = that amount for 1 kg.
+    // For gm: price entered is per gm → stored price = (price per gm) × weightGrams.
+    const storedPrice =
+      isWeightCategory && newUnit === 'g' && weightGrams != null
+        ? Math.round(parsedPrice * weightGrams)
+        : Math.round(parsedPrice);
     const item: StoreItem = {
       id,
       sku,
@@ -173,11 +200,13 @@ export function AdminPage({
       subcategory: newCategory === 'fruit' ? newSubcategory : undefined,
       unit: newUnit,
       weightGrams,
-      price: Math.round(parsedPrice),
+      price: storedPrice,
       image: newImage.trim(),
       tags: tags.length ? tags : undefined,
     };
-    setCatalogDraft((prev) => [...prev, item]);
+    const newDraft = [...catalogDraft, item];
+    setCatalogDraft(newDraft);
+    onInventoryUpload(newDraft);
     setCatalogError('');
     setNewName('');
     setNewPrice('');
@@ -198,22 +227,67 @@ export function AdminPage({
     setConfirmRemoveId(null);
   };
 
-  const handlePriceUpdate = (id: string, value: string) => {
-    const nextPrice = Number(value);
-    if (!Number.isFinite(nextPrice) || nextPrice <= 0) {
-      return;
-    }
-    setCatalogDraft((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, price: Math.round(nextPrice) } : item))
+  const handleOpenEdit = (item: StoreItem) => {
+    setEditingItem(item);
+    setEditName(item.name);
+    setEditCategory(item.category);
+    setEditSubcategory(item.subcategory ?? 'regular');
+    setEditUnit(item.unit);
+    setEditPrice(
+      item.unit === 'g' && item.weightGrams && item.weightGrams > 0
+        ? String(item.price / item.weightGrams)
+        : String(item.price)
     );
+    setEditImage(item.image);
+    setEditTags((item.tags ?? []).join(', '));
   };
 
-  const handleSaveItem = (id: string) => {
-    const itemToSave = catalogDraft.find((item) => item.id === id);
-    if (!itemToSave) {
+  const handleCloseEdit = () => {
+    setEditingItem(null);
+    setEditName('');
+    setEditPrice('');
+    setEditImage('');
+    setEditTags('');
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingItem) return;
+    const name = editName.trim();
+    const parsedPrice = Number(editPrice);
+    if (!name || name.length < 2 || !Number.isFinite(parsedPrice) || parsedPrice <= 0 || !editImage.trim()) {
       return;
     }
-    onInventoryItemUpdate(itemToSave);
+    const isWeightCategory = editCategory === 'fruit' || editCategory === 'dry';
+    const weightGrams =
+      isWeightCategory && (editUnit === 'kg' || editUnit === 'g')
+        ? editUnit === 'kg'
+          ? 1000
+          : 500
+        : undefined;
+    const storedPrice =
+      isWeightCategory && editUnit === 'g' && weightGrams != null
+        ? Math.round(parsedPrice * weightGrams)
+        : Math.round(parsedPrice);
+    const tags = editTags
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean);
+    const updated: StoreItem = {
+      ...editingItem,
+      name,
+      category: editCategory,
+      subcategory: editCategory === 'fruit' ? editSubcategory : undefined,
+      unit: editUnit,
+      weightGrams: weightGrams ?? undefined,
+      price: storedPrice,
+      image: editImage.trim(),
+      tags: tags.length ? tags : undefined,
+    };
+    setCatalogDraft((prev) =>
+      prev.map((item) => (item.id === editingItem.id ? updated : item))
+    );
+    onInventoryItemUpdate(updated);
+    handleCloseEdit();
   };
 
   const parseCsvLine = (line: string) => {
@@ -413,13 +487,6 @@ export function AdminPage({
           <div className="flex items-center gap-2">
             <button
               className="text-sm text-green-700 border border-green-200 px-3 py-2 rounded-full hover:bg-green-50"
-              onClick={() => onInventoryUpload(catalogDraft)}
-              disabled={inventorySaving || catalogDraft.length === 0}
-            >
-              Save catalogue
-            </button>
-            <button
-              className="text-sm text-green-700 border border-green-200 px-3 py-2 rounded-full hover:bg-green-50"
               onClick={handleAutoMatchImages}
               disabled={catalogDraft.length === 0}
             >
@@ -463,9 +530,6 @@ export function AdminPage({
 
       <div className="grid lg:grid-cols-[1fr_1.2fr] gap-6">
         <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
-          <p className="text-sm text-gray-600 mb-4">
-            Use a stable image URL (or a path from `/public/images/products/...`).
-          </p>
           <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 mb-4">
             <h4 className="text-sm font-semibold text-gray-800 mb-3">Add new item</h4>
             <div className="grid gap-3">
@@ -580,14 +644,16 @@ export function AdminPage({
                     onChange={(event) => setNewUnit(event.target.value as StoreItem['unit'])}
                   >
                     <option value="kg">kg</option>
-                    <option value="g">g</option>
+                    <option value="g">gm</option>
                     <option value="pack">pack</option>
                     <option value="bundle">bundle</option>
                     <option value="bowl">bowl</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-gray-600">Price (₹ per kg)</label>
+                  <label className="text-xs font-semibold text-gray-600">
+                    Price (₹ per {newUnit === 'g' ? 'gm' : newUnit})
+                  </label>
                   <input
                     type="number"
                     className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
@@ -613,16 +679,9 @@ export function AdminPage({
               <button
                 className="text-xs bg-green-600 text-white px-3 py-2 rounded-full font-semibold hover:bg-green-700 disabled:opacity-60"
                 onClick={handleAddItem}
-                disabled={!canAddItem}
+                disabled={!canAddItem || inventorySaving}
               >
                 Add item
-              </button>
-              <button
-                className="text-xs text-green-700 border border-green-200 px-3 py-2 rounded-full hover:bg-green-50 disabled:opacity-60"
-                onClick={() => onInventoryUpload(catalogDraft)}
-                disabled={inventorySaving || catalogDraft.length === 0}
-              >
-                Save catalogue
               </button>
               <button
                 className="text-xs text-red-600 border border-red-200 px-3 py-2 rounded-full hover:bg-red-50 disabled:opacity-60"
@@ -683,28 +742,21 @@ export function AdminPage({
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-900 truncate">{item.name}</p>
-                  <p className="text-xs text-gray-500">
-                    {item.category}
-                    {item.subcategory ? ` · ${item.subcategory}` : ''} · {item.unit}
-                  </p>
+                    <p className="text-xs text-gray-500">
+                      {item.category}
+                      {item.subcategory ? ` · ${item.subcategory}` : ''} · {item.unit}
+                      {item.weightGrams != null ? ` · ${item.weightGrams >= 1000 ? `${item.weightGrams / 1000} kg` : `${item.weightGrams} gm`}` : ''}
+                    </p>
                   </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-xs text-gray-500">₹</label>
-                  <input
-                    type="number"
-                    className="w-20 rounded-lg border border-gray-200 px-2 py-1 text-xs"
-                    defaultValue={item.price}
-                    min="1"
-                    onBlur={(event) => handlePriceUpdate(item.id, event.target.value)}
-                  />
-                </div>
-                <button
-                  className="text-xs text-green-700 border border-green-200 px-3 py-1 rounded-full hover:bg-green-50 disabled:opacity-60"
-                  onClick={() => handleSaveItem(item.id)}
-                  disabled={inventorySaving}
-                >
-                  Save
-                </button>
+                  <p className="text-xs font-semibold text-gray-700">₹{item.price}</p>
+                  <button
+                    type="button"
+                    className="p-2 rounded-full text-gray-600 hover:bg-gray-100 hover:text-green-700"
+                    onClick={() => handleOpenEdit(item)}
+                    aria-label={`Edit ${item.name}`}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
                   <button
                     className="text-xs text-red-600 border border-red-200 px-3 py-1 rounded-full hover:bg-red-50"
                     onClick={() => handleRemoveItem(item.id)}
@@ -720,6 +772,178 @@ export function AdminPage({
           )}
         </div>
       </div>
+    {editingItem && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6 overflow-y-auto">
+        <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-xl my-auto">
+          <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <Pencil className="w-5 h-5 text-green-600" />
+            Edit item
+          </h4>
+          <div className="mt-4 space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-gray-600">Name</label>
+              <input
+                type="text"
+                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="e.g. Alphonso Mango"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-600">Image URL</label>
+              <input
+                type="text"
+                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                value={editImage}
+                onChange={(e) => setEditImage(e.target.value)}
+                placeholder="/images/products/..."
+              />
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <select
+                  className="rounded-xl border border-gray-200 px-3 py-2 text-xs"
+                  value=""
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value) setEditImage(value);
+                  }}
+                  disabled={imagesLoading || imageOptions.length === 0}
+                >
+                  <option value="">
+                    {imagesLoading
+                      ? 'Loading image library...'
+                      : imageOptions.length
+                        ? 'Pick from library'
+                        : 'No images found'}
+                  </option>
+                  {imageOptions.map((image) => (
+                    <option key={image} value={image}>
+                      {image}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="text-xs text-green-700 border border-green-200 px-3 py-2 rounded-full hover:bg-green-50"
+                  onClick={async () => {
+                    setImagesLoading(true);
+                    setImagesError('');
+                    try {
+                      const images = await fetchInventoryImages();
+                      setImageOptions(images);
+                    } catch {
+                      setImagesError('Unable to load image library.');
+                    } finally {
+                      setImagesLoading(false);
+                    }
+                  }}
+                >
+                  Refresh
+                </button>
+                {imagesError && (
+                  <span className="text-xs text-red-600">{imagesError}</span>
+                )}
+              </div>
+              {editImage && (
+                <div className="mt-2 w-16 h-16 rounded-xl border border-gray-200 overflow-hidden">
+                  <img src={editImage} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-gray-600">Category</label>
+                <select
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                  value={editCategory}
+                  onChange={(e) => setEditCategory(e.target.value as StoreItem['category'])}
+                >
+                  <option value="fruit">Fruit</option>
+                  <option value="dry">Dry fruit</option>
+                  <option value="combo">Combo</option>
+                  <option value="subscription">Subscription</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-600">Subcategory</label>
+                <select
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                  value={editSubcategory ?? 'regular'}
+                  onChange={(e) => setEditSubcategory(e.target.value as StoreItem['subcategory'])}
+                  disabled={editCategory !== 'fruit'}
+                >
+                  <option value="regular">Regular</option>
+                  <option value="exotic">Exotic</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-gray-600">Unit</label>
+                <select
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                  value={editUnit}
+                  onChange={(e) => setEditUnit(e.target.value as StoreItem['unit'])}
+                >
+                  <option value="kg">kg</option>
+                  <option value="g">gm</option>
+                  <option value="pack">pack</option>
+                  <option value="bundle">bundle</option>
+                  <option value="bowl">bowl</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-600">
+                  Price (₹ per {editUnit === 'g' ? 'gm' : editUnit})
+                </label>
+                <input
+                  type="number"
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                  value={editPrice}
+                  onChange={(e) => setEditPrice(e.target.value)}
+                  min="0"
+                  step="any"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-600">Tags (comma separated)</label>
+              <input
+                type="text"
+                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                value={editTags}
+                onChange={(e) => setEditTags(e.target.value)}
+                placeholder="daily_use, premium"
+              />
+            </div>
+          </div>
+          <div className="mt-6 flex items-center justify-end gap-2">
+            <button
+              type="button"
+              className="text-sm text-gray-700 border border-gray-200 px-4 py-2 rounded-full hover:bg-gray-50"
+              onClick={handleCloseEdit}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="text-sm text-white bg-green-600 px-4 py-2 rounded-full hover:bg-green-700 disabled:opacity-60"
+              onClick={handleSaveEdit}
+              disabled={
+                !editName.trim() ||
+                editName.trim().length < 2 ||
+                !Number.isFinite(Number(editPrice)) ||
+                Number(editPrice) <= 0 ||
+                !editImage.trim() ||
+                inventorySaving
+              }
+            >
+              Save changes
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     {confirmRemoveId && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
         <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-xl">

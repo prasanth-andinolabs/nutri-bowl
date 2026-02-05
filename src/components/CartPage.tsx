@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Minus, Plus, ShoppingCart } from 'lucide-react';
 import type { CustomerProfile, StoreItem } from '../types';
+import { formatAmountWithUnit } from '../utils/format';
 
 type CartPageProps = {
   cartItems: Array<StoreItem & { qty: number; total: number }>;
@@ -62,15 +63,6 @@ export function CartPage({
   const [showLocation, setShowLocation] = useState(false);
   const [cartHydrated, setCartHydrated] = useState(false);
   const skeletons = Array.from({ length: 3 });
-  const formatWeight = (item: StoreItem) => {
-    if (item.weightGrams) {
-      return item.weightGrams >= 1000
-        ? `${item.weightGrams / 1000} kg`
-        : `${item.weightGrams} gm`;
-    }
-    return item.unit;
-  };
-
   useEffect(() => {
     setCartHydrated(true);
   }, []);
@@ -128,11 +120,11 @@ export function CartPage({
                       <p className="font-semibold text-gray-900">
                         {item.name}
                         <span className="ml-2 text-xs text-gray-500 font-medium">
-                          {formatWeight(item)}
+                          {formatAmountWithUnit(item)}
                         </span>
                       </p>
                       <p className="text-sm text-gray-600">
-                        {item.qty} x ₹{item.price} ({formatWeight(item)})
+                        {item.qty} x ₹{item.price} ({formatAmountWithUnit(item)})
                       </p>
                     </div>
                     <div className="text-right">
@@ -409,7 +401,7 @@ export function CartPage({
                         <div>
                           <p className="font-semibold text-gray-900">{item.name}</p>
                           <p className="text-xs text-gray-600">
-                            ₹{item.price} / {item.unit}
+                            ₹{item.price} / {formatAmountWithUnit(item)}
                           </p>
                         </div>
                         <button
