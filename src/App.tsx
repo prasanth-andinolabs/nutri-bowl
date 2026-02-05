@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Leaf } from 'lucide-react';
+import { Instagram, MessageCircle, Phone } from 'lucide-react';
 import { STORE_ITEMS } from './data/storeItems';
 import type { Order, StoreItem } from './types';
 import { Header } from './components/Header';
@@ -596,15 +596,88 @@ function App() {
         />
       )}
 
-      <footer className="bg-gray-900 text-white py-10 pb-20 sm:pb-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <Leaf className="w-7 h-7 text-green-500" />
-            <span className="text-lg font-semibold">NutriBowl</span>
+      <footer className="bg-gray-900 text-white py-12 pb-20 sm:pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-12">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <img
+                  src="/image.png"
+                  alt="Nutri Bowl logo"
+                  className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
+                />
+                <div>
+                  <h3 className="text-2xl font-bold text-white">Nutri Bowl</h3>
+                  <p className="text-sm text-gray-400">Fresh & Healthy</p>
+                </div>
+              </div>
+              <p className="text-gray-400 leading-relaxed">
+                Delivering fresh, nutritious breakfast bowls to your doorstep every morning. Your
+                health, our priority.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="text-lg font-bold mb-4">Contact Us</h4>
+              <div className="space-y-3">
+                <a
+                  href="tel:+919642338692"
+                  className="flex items-center gap-3 text-gray-400 hover:text-white transition"
+                >
+                  <Phone className="w-5 h-5 text-green-500" />
+                  <span>+91 96423 38692</span>
+                </a>
+                <a
+                  href="https://wa.me/919390574240"
+                  className="flex items-center gap-3 text-gray-400 hover:text-white transition"
+                >
+                  <MessageCircle className="w-5 h-5 text-green-500" />
+                  <span>+91 93905 74240 (WhatsApp)</span>
+                </a>
+                <a
+                  href="https://instagram.com/nutribowl_rajam"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 text-gray-400 hover:text-white transition"
+                >
+                  <Instagram className="w-5 h-5 text-green-500" />
+                  <span>@nutribowl_rajam</span>
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-lg font-bold mb-4">Quick Links</h4>
+              <ul className="space-y-2">
+                <li>
+                  <a href="#packages" className="text-gray-400 hover:text-white transition">
+                    Our Packages
+                  </a>
+                </li>
+                <li>
+                  <a href="#special" className="text-gray-400 hover:text-white transition">
+                    Specialized Plans
+                  </a>
+                </li>
+                <li>
+                  <a href="#catering" className="text-gray-400 hover:text-white transition">
+                    Catering Services
+                  </a>
+                </li>
+                <li>
+                  <a href="#contact" className="text-gray-400 hover:text-white transition">
+                    Contact
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
-          <p className="text-gray-400 text-sm">
-            COD-only MVP for a single city. Built for small-team operations.
-          </p>
+
+          <div className="border-t border-gray-800 mt-12 pt-8 text-center">
+            <p className="text-gray-400">
+              &copy; {new Date().getFullYear()} Nutri Bowl. All rights reserved. | Stay Fit, Stay Healthy
+            </p>
+          </div>
         </div>
       </footer>
     </div>

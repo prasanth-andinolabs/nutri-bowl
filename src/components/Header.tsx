@@ -1,4 +1,4 @@
-import { Leaf, ShoppingCart } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import type { CustomerProfile } from '../types';
 
 type HeaderProps = {
@@ -20,9 +20,6 @@ export function Header({
   isCartRoute,
   isSubscriptionsRoute,
   cartCount,
-  cartTotal,
-  customerProfile,
-  isGuestCheckout,
   onNavigate,
   onCartClick,
 }: HeaderProps) {
@@ -30,7 +27,11 @@ export function Header({
     <header className="bg-white/90 backdrop-blur border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Leaf className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+          <img
+            src="/image.png"
+            alt="Nutri Bowl logo"
+            className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
+          />
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-green-600">NutriBowl</h1>
             <p className="text-xs text-gray-600 hidden sm:block">
