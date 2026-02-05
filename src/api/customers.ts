@@ -1,4 +1,5 @@
 import type { CustomerProfile } from '../types';
+import { apiUrl } from './base';
 
 type AuthResponse = { ok: true; accessToken: string; profile: CustomerProfile };
 
@@ -7,7 +8,7 @@ export async function registerCustomer(
   phone: string,
   password: string
 ): Promise<AuthResponse> {
-  const response = await fetch('/api/customers/register', {
+  const response = await fetch(apiUrl('/api/customers/register'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, phone, password }),
@@ -25,7 +26,7 @@ export async function registerCustomer(
 }
 
 export async function loginCustomer(phone: string, password: string): Promise<AuthResponse> {
-  const response = await fetch('/api/customers/login', {
+  const response = await fetch(apiUrl('/api/customers/login'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ phone, password }),

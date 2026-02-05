@@ -1,7 +1,8 @@
 import type { StoreItem } from '../types';
+import { apiUrl } from './base';
 
 export async function fetchInventory(): Promise<StoreItem[]> {
-  const response = await fetch('/api/inventory');
+  const response = await fetch(apiUrl('/api/inventory'));
   if (!response.ok) {
     throw new Error('Inventory fetch failed');
   }
@@ -9,7 +10,7 @@ export async function fetchInventory(): Promise<StoreItem[]> {
 }
 
 export async function resetInventory(adminKey: string): Promise<void> {
-  const response = await fetch('/api/inventory/reset', {
+  const response = await fetch(apiUrl('/api/inventory/reset'), {
     method: 'POST',
     headers: { 'x-admin-key': adminKey },
   });
