@@ -1,0 +1,29 @@
+[
+  {
+    "id": "ord_1770231212282",
+    "createdAt": "2026-02-04T18:53:32.282Z",
+    "status": "pending_confirmation",
+    "type": "store",
+    "serviceArea": "North City",
+    "phone": "9059071787",
+    "address": "7-24, raja street, boddam village, rajam mandal",
+    "paymentMethod": "COD",
+    "items": [
+      {
+        "id": "banana",
+        "name": "Banana",
+        "qty": 1,
+        "price": 60,
+        "total": 60
+      },
+      {
+        "id": "apple",
+        "name": "Apple",
+        "qty": 1,
+        "price": 180,
+        "total": 180
+      }
+    ],
+    "total": 240
+  }
+]

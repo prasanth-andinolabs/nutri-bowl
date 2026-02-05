@@ -1,0 +1,182 @@
+[
+  {
+    "id": "banana",
+    "name": "Banana",
+    "category": "fresh",
+    "unit": "kg",
+    "price": 60,
+    "image": "https://images.pexels.com/photos/616833/pexels-photo-616833.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": ["best_seller"]
+  },
+  {
+    "id": "mango",
+    "name": "Mango",
+    "category": "fresh",
+    "unit": "kg",
+    "price": 180,
+    "image": "https://images.pexels.com/photos/2294471/pexels-photo-2294471.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": []
+  },
+  {
+    "id": "apple",
+    "name": "Apple",
+    "category": "fresh",
+    "unit": "kg",
+    "price": 180,
+    "image": "https://images.pexels.com/photos/102104/pexels-photo-102104.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": []
+  },
+  {
+    "id": "orange",
+    "name": "Orange",
+    "category": "fresh",
+    "unit": "kg",
+    "price": 120,
+    "image": "https://images.pexels.com/photos/42059/citrus-diet-food-fresh-42059.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": []
+  },
+  {
+    "id": "grapes",
+    "name": "Grapes",
+    "category": "fresh",
+    "unit": "kg",
+    "price": 140,
+    "image": "https://images.pexels.com/photos/708777/pexels-photo-708777.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": []
+  },
+  {
+    "id": "papaya",
+    "name": "Papaya",
+    "category": "fresh",
+    "unit": "kg",
+    "price": 55,
+    "image": "https://images.pexels.com/photos/5945841/pexels-photo-5945841.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": ["seasonal"]
+  },
+  {
+    "id": "pineapple",
+    "name": "Pineapple",
+    "category": "fresh",
+    "unit": "kg",
+    "price": 90,
+    "image": "https://images.pexels.com/photos/947879/pexels-photo-947879.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": []
+  },
+  {
+    "id": "pomegranate",
+    "name": "Pomegranate",
+    "category": "fresh",
+    "unit": "kg",
+    "price": 220,
+    "image": "https://images.pexels.com/photos/70841/pomegranate-fruit-ruby-red-70841.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": ["exotic"]
+  },
+  {
+    "id": "watermelon",
+    "name": "Watermelon",
+    "category": "fresh",
+    "unit": "kg",
+    "price": 45,
+    "image": "https://images.pexels.com/photos/5945634/pexels-photo-5945634.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": []
+  },
+  {
+    "id": "strawberry",
+    "name": "Strawberry",
+    "category": "fresh",
+    "unit": "pack",
+    "price": 160,
+    "image": "https://images.pexels.com/photos/46174/strawberries-berries-fruit-freshness-46174.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": []
+  },
+  {
+    "id": "kiwi",
+    "name": "Kiwi",
+    "category": "fresh",
+    "unit": "pack",
+    "price": 140,
+    "image": "https://images.pexels.com/photos/5945744/pexels-photo-5945744.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": ["exotic"]
+  },
+  {
+    "id": "banana-red",
+    "name": "Red Banana",
+    "category": "fresh",
+    "unit": "kg",
+    "price": 110,
+    "image": "https://images.pexels.com/photos/5945716/pexels-photo-5945716.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": ["exotic"]
+  },
+  {
+    "id": "guava",
+    "name": "Guava",
+    "category": "fresh",
+    "unit": "kg",
+    "price": 80,
+    "image": "https://images.pexels.com/photos/5945740/pexels-photo-5945740.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": []
+  },
+  {
+    "id": "almonds",
+    "name": "Almonds",
+    "category": "dry",
+    "unit": "pack",
+    "price": 350,
+    "image": "https://images.pexels.com/photos/1295572/pexels-photo-1295572.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": ["best_seller"]
+  },
+  {
+    "id": "cashew",
+    "name": "Cashew",
+    "category": "dry",
+    "unit": "pack",
+    "price": 420,
+    "image": "https://images.pexels.com/photos/1435907/pexels-photo-1435907.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": []
+  },
+  {
+    "id": "pistachio",
+    "name": "Pistachio",
+    "category": "dry",
+    "unit": "pack",
+    "price": 520,
+    "image": "https://images.pexels.com/photos/6164049/pexels-photo-6164049.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": []
+  },
+  {
+    "id": "walnut",
+    "name": "Walnut",
+    "category": "dry",
+    "unit": "pack",
+    "price": 480,
+    "image": "https://images.pexels.com/photos/1295571/pexels-photo-1295571.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": []
+  },
+  {
+    "id": "raisins",
+    "name": "Raisins",
+    "category": "dry",
+    "unit": "pack",
+    "price": 190,
+    "image": "https://images.pexels.com/photos/616404/pexels-photo-616404.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": []
+  },
+  {
+    "id": "dates",
+    "name": "Dates",
+    "category": "dry",
+    "unit": "pack",
+    "price": 260,
+    "image": "https://images.pexels.com/photos/12532652/pexels-photo-12532652.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": []
+  },
+  {
+    "id": "figs",
+    "name": "Dried Figs",
+    "category": "dry",
+    "unit": "pack",
+    "price": 420,
+    "image": "https://images.pexels.com/photos/15103980/pexels-photo-15103980.jpeg?auto=compress&cs=tinysrgb&w=600",
+    "tags": []
+  }
+]
