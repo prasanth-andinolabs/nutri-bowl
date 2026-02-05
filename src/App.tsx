@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Instagram, MessageCircle, Phone } from 'lucide-react';
-import { STORE_ITEMS } from './data/storeItems';
 import type { Order, StoreItem } from './types';
 import { Header } from './components/Header';
 import { CartPage } from './components/CartPage';
@@ -27,7 +26,7 @@ import { useCustomerAuth } from './hooks/useCustomerAuth';
 import { useCartState } from './hooks/useCartState';
 
 function App() {
-  const [inventory, setInventory] = useState<StoreItem[]>(STORE_ITEMS);
+  const [inventory, setInventory] = useState<StoreItem[]>([]);
   const [inventoryLoading, setInventoryLoading] = useState(true);
   const [storePlaced, setStorePlaced] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -128,7 +127,7 @@ function App() {
           setInventory(data);
         }
       } catch {
-        setInventory(STORE_ITEMS);
+        setInventory([]);
       } finally {
         setInventoryLoading(false);
       }
