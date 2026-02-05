@@ -2,9 +2,12 @@ export type OrderStatus = 'pending_confirmation' | 'confirmed' | 'delivered' | '
 
 export type StoreItem = {
   id: string;
+  sku: string;
   name: string;
-  category: 'fresh' | 'dry';
-  unit: 'kg' | 'pack';
+  category: 'fruit' | 'dry' | 'combo' | 'subscription';
+  subcategory?: 'regular' | 'exotic';
+  unit: 'g' | 'kg' | 'pack' | 'bundle' | 'bowl';
+  weightGrams?: number;
   price: number;
   image: string;
   tags?: string[];

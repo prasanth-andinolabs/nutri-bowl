@@ -12,7 +12,14 @@ import { OrdersPage } from './components/OrdersPage';
 import { HomePage } from './components/HomePage';
 import { BottomNav } from './components/BottomNav';
 import { SubscriptionsPage } from './components/SubscriptionsPage';
-import { createOrder, fetchInventory, resetInventory } from './api';
+import {
+  createOrder,
+  fetchInventory,
+  resetInventory,
+  updateInventory,
+  updateInventoryItem,
+  deleteInventoryItem,
+} from './api';
 import { useOrders } from './hooks/useOrders';
 import { getOrderToken, setOrderToken } from './utils/storage';
 import { useAdminAuth } from './hooks/useAdminAuth';
@@ -171,17 +178,61 @@ function App() {
   });
 
   const catalog = useMemo(() => {
-    const fresh = inventory.filter((item) => item.category === 'fresh');
+    const regularFruits = inventory.filter(
+      (item) => item.category === 'fruit' && item.subcategory !== 'exotic'
+    );
+    const exoticFruits = inventory.filter(
+      (item) => item.category === 'fruit' && item.subcategory === 'exotic'
+    );
     const dry = inventory.filter((item) => item.category === 'dry');
-    return { fresh, dry };
+    const combos = inventory.filter((item) => item.category === 'combo');
+    const subscriptions = inventory.filter((item) => item.category === 'subscription');
+    return { regularFruits, exoticFruits, dry, combos, subscriptions };
   }, [inventory]);
 
+  const CART_KEY_DELIMITER = '::';
+  const buildCartKey = (id: string, weightGrams?: number) =>
+    typeof weightGrams === 'number' ? `${id}${CART_KEY_DELIMITER}${weightGrams}` : id;
+  const parseCartKey = (key: string) => {
+    if (!key.includes(CART_KEY_DELIMITER)) {
+      return { id: key, weightGrams: undefined };
+    }
+    const [id, weight] = key.split(CART_KEY_DELIMITER);
+    const weightGrams = Number(weight);
+    return {
+      id,
+      weightGrams: Number.isFinite(weightGrams) ? weightGrams : undefined,
+    };
+  };
+  const getPricePerKg = (item: StoreItem) => {
+    if (item.weightGrams && item.weightGrams > 0) {
+      return item.price / (item.weightGrams / 1000);
+    }
+    return item.price;
+  };
+
   const cartItems = useMemo(() => {
-    return inventory.filter((item) => cart[item.id] > 0).map((item) => ({
-      ...item,
-      qty: cart[item.id],
-      total: cart[item.id] * item.price,
-    }));
+    return Object.entries(cart).flatMap(([key, qty]) => {
+      const { id, weightGrams } = parseCartKey(key);
+      const item = inventory.find((entry) => entry.id === id);
+      if (!item || qty <= 0) {
+        return [];
+      }
+      const usesWeight = typeof weightGrams === 'number';
+      const unitPrice = usesWeight
+        ? Math.round(getPricePerKg(item) * (weightGrams / 1000))
+        : item.price;
+      return [
+        {
+          ...item,
+          weightGrams: usesWeight ? weightGrams : item.weightGrams,
+          price: unitPrice,
+          qty,
+          total: unitPrice * qty,
+          cartKey: key,
+        },
+      ];
+    });
   }, [cart, inventory]);
 
   const recommendedItems = useMemo(() => {
@@ -262,15 +313,16 @@ function App() {
     return items.slice(start, start + pageSize);
   };
 
-  const updateQty = (id: string, delta: number) => {
+  const updateQty = (id: string, delta: number, weightGrams?: number) => {
+    const cartKey = buildCartKey(id, weightGrams);
     setCart((prev) => {
       const next = { ...prev };
-      const current = next[id] ?? 0;
+      const current = next[cartKey] ?? 0;
       const updated = Math.max(0, current + delta);
       if (updated === 0) {
-        delete next[id];
+        delete next[cartKey];
       } else {
-        next[id] = updated;
+        next[cartKey] = updated;
       }
       return next;
     });
@@ -383,6 +435,50 @@ function App() {
     }
   };
 
+  const handleInventoryUpload = async (items: StoreItem[]) => {
+    try {
+      setInventorySaving(true);
+      setInventoryMessage('');
+      await updateInventory(adminKey, items);
+      const data = await fetchInventory();
+      setInventory(data);
+      setInventoryMessage('Catalogue updated successfully.');
+    } catch {
+      setInventoryMessage('Failed to upload catalogue.');
+    } finally {
+      setInventorySaving(false);
+    }
+  };
+
+  const handleInventoryItemUpdate = async (item: StoreItem) => {
+    try {
+      setInventorySaving(true);
+      setInventoryMessage('');
+      await updateInventoryItem(adminKey, item);
+      const data = await fetchInventory();
+      setInventory(data);
+      setInventoryMessage('Item updated.');
+    } catch {
+      setInventoryMessage('Failed to update item.');
+    } finally {
+      setInventorySaving(false);
+    }
+  };
+
+  const handleInventoryItemDelete = async (id: string) => {
+    try {
+      setInventorySaving(true);
+      setInventoryMessage('');
+      await deleteInventoryItem(adminKey, id);
+      setInventory((prev) => prev.filter((item) => item.id !== id));
+      setInventoryMessage('Item deleted.');
+    } catch {
+      setInventoryMessage('Failed to delete item.');
+    } finally {
+      setInventorySaving(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <Header
@@ -424,6 +520,7 @@ function App() {
           cancelledTotals={cancelledTotals}
           inventorySaving={inventorySaving}
           inventoryMessage={inventoryMessage}
+          inventory={inventory}
           onAdminUsernameChange={setAdminUsername}
           onAdminPasswordChange={setAdminPassword}
           onAdminLogin={handleAdminLogin}
@@ -432,6 +529,9 @@ function App() {
           onOrderClick={setActiveOrder}
           onUpdateOrderStatus={updateOrderStatus}
           onInventoryReset={handleInventoryReset}
+          onInventoryUpload={handleInventoryUpload}
+          onInventoryItemUpdate={handleInventoryItemUpdate}
+          onInventoryItemDelete={handleInventoryItemDelete}
         />
       ) : isCartRoute ? (
         <CartPage
@@ -474,6 +574,7 @@ function App() {
                   qty: item.qty,
                   price: item.price,
                   total: item.total,
+                  weightGrams: item.weightGrams,
                 })),
                 total: cartTotal,
                 location: locationCoords,

@@ -1,21 +1,34 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Minus, Phone, Plus, Store } from 'lucide-react';
 import type { StoreItem } from '../types';
 
 type HomePageProps = {
   inventoryLoading: boolean;
   catalog: {
-    fresh: StoreItem[];
+    regularFruits: StoreItem[];
+    exoticFruits: StoreItem[];
     dry: StoreItem[];
+    combos: StoreItem[];
+    subscriptions: StoreItem[];
   };
   cart: Record<string, number>;
   cartCount: number;
   cartTotal: number;
-  onUpdateQty: (id: string, delta: number) => void;
+  onUpdateQty: (id: string, delta: number, weightGrams?: number) => void;
   onGoToCart: () => void;
   onGoToOrders: () => void;
   onGoToSubscriptions: () => void;
   onGoToCatalog: () => void;
+};
+
+type CatalogGroup = {
+  key: string;
+  name: string;
+  category: StoreItem['category'];
+  subcategory?: StoreItem['subcategory'];
+  image: string;
+  tags: string[];
+  variants: StoreItem[];
 };
 
 export function HomePage({
@@ -30,23 +43,81 @@ export function HomePage({
   onGoToSubscriptions,
   onGoToCatalog,
 }: HomePageProps) {
-  const [toastMessage, setToastMessage] = useState('');
+  const [selectedWeights, setSelectedWeights] = useState<Record<string, number>>({});
   const hasTag = (item: StoreItem, tag: string) => item.tags?.includes(tag);
-
-  useEffect(() => {
-    if (!toastMessage) {
-      return;
+  const formatWeight = (item: StoreItem) => {
+    if (item.weightGrams) {
+      return item.weightGrams >= 1000
+        ? `${item.weightGrams / 1000} kg`
+        : `${item.weightGrams} gm`;
     }
-    const timeout = window.setTimeout(() => {
-      setToastMessage('');
-    }, 1400);
-    return () => window.clearTimeout(timeout);
-  }, [toastMessage]);
-
-  const handleAdd = (item: StoreItem) => {
-    onUpdateQty(item.id, 1);
-    setToastMessage(`${item.name} added to cart`);
+    return item.unit;
   };
+  const formatWeightLabel = (item: StoreItem) => formatWeight(item);
+  const formatWeightFromGrams = (weightGrams: number) =>
+    weightGrams >= 1000 ? `${weightGrams / 1000} kg` : `${weightGrams} gm`;
+  const weightOptions = [250, 500, 1000];
+  const getPricePerKg = (item: StoreItem) => {
+    if (item.weightGrams && item.weightGrams > 0) {
+      return item.price / (item.weightGrams / 1000);
+    }
+    return item.price;
+  };
+  const getBaseVariant = (group: CatalogGroup) => {
+    return group.variants.reduce((best, current) => {
+      const bestWeight = best.weightGrams ?? 0;
+      const currentWeight = current.weightGrams ?? 0;
+      if (bestWeight === 0) {
+        return current;
+      }
+      if (currentWeight === 0) {
+        return best;
+      }
+      const bestDiff = Math.abs(1000 - bestWeight);
+      const currentDiff = Math.abs(1000 - currentWeight);
+      return currentDiff < bestDiff ? current : best;
+    }, group.variants[0]);
+  };
+  const groupItems = (items: StoreItem[]): CatalogGroup[] => {
+    const grouped = new Map<string, CatalogGroup>();
+    items.forEach((item) => {
+      const key = `${item.category}-${item.subcategory ?? 'all'}-${item.name}`;
+      const existing = grouped.get(key);
+      if (existing) {
+        existing.variants.push(item);
+        return;
+      }
+      grouped.set(key, {
+        key,
+        name: item.name,
+        category: item.category,
+        subcategory: item.subcategory,
+        image: item.image,
+        tags: item.tags ?? [],
+        variants: [item],
+      });
+    });
+    grouped.forEach((group) => {
+      group.variants.sort((a, b) => {
+        const weightDiff = (a.weightGrams ?? 0) - (b.weightGrams ?? 0);
+        if (weightDiff !== 0) {
+          return weightDiff;
+        }
+        return a.price - b.price;
+      });
+    });
+    return Array.from(grouped.values());
+  };
+  const regularFruitGroups = groupItems(catalog.regularFruits);
+  const exoticFruitGroups = groupItems(catalog.exoticFruits);
+  const dryGroups = groupItems(catalog.dry);
+  const comboGroups = groupItems(catalog.combos);
+  const subscriptionGroups = groupItems(catalog.subscriptions);
+  const getSelectedWeight = (group: CatalogGroup) => selectedWeights[group.key] ?? 1000;
+  const handleWeightSelect = (groupKey: string, weightGrams: number) => {
+    setSelectedWeights((prev) => ({ ...prev, [groupKey]: weightGrams }));
+  };
+
   const skeletons = Array.from({ length: 6 });
 
   return (
@@ -135,51 +206,57 @@ export function HomePage({
             </p>
             <div className="space-y-10">
               <div>
-                <h4 className="text-2xl font-semibold mb-4">Fresh Fruits</h4>
+                <h4 className="text-2xl font-semibold mb-4">Regular Fruits</h4>
                 {inventoryLoading && (
-                  <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-6">
                     {skeletons.map((_, index) => (
                       <div
                         key={`fresh-skeleton-${index}`}
-                        className="bg-white rounded-3xl p-5 border border-green-100 shadow-sm animate-pulse"
+                        className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-green-100 shadow-sm animate-pulse"
                       >
-                        <div className="w-full h-40 rounded-2xl bg-gray-200 mb-4" />
+                        <div className="w-full h-36 sm:h-40 rounded-2xl bg-gray-200 mb-4" />
                         <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
                         <div className="h-3 bg-gray-200 rounded w-1/2" />
                       </div>
                     ))}
                   </div>
                 )}
-                <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {catalog.fresh.map((item) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                  {regularFruitGroups.map((group) => {
+                    const baseItem = getBaseVariant(group);
+                    const selectedWeight = getSelectedWeight(group);
+                    const pricePerKg = getPricePerKg(baseItem);
+                    const unitPrice = Math.round(pricePerKg * (selectedWeight / 1000));
+                    const qty = cart[`${baseItem.id}::${selectedWeight}`] ?? 0;
+                    return (
                     <div
-                      key={item.id}
-                      className="bg-white rounded-3xl p-5 border border-green-100 shadow-sm transition sm:hover:shadow-lg sm:hover:-translate-y-0.5"
+                      key={group.key}
+                      className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-green-100 shadow-sm transition sm:hover:shadow-lg sm:hover:-translate-y-0.5"
                     >
                       <button
                         type="button"
                         className="w-full text-left"
-                        onClick={() => handleAdd(item)}
-                        aria-label={`Add ${item.name}`}
+                        onClick={() => onUpdateQty(baseItem.id, 1, selectedWeight)}
+                        aria-label={`Add ${group.name}`}
                       >
                         <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-40 rounded-2xl object-cover mb-4"
+                          src={baseItem.image}
+                          alt={group.name}
+                          className="w-full h-36 sm:h-40 rounded-2xl object-cover mb-4"
                         />
                       </button>
                       <div className="flex flex-wrap gap-2 mb-3">
-                        {hasTag(item, 'seasonal') && (
+                        {hasTag(baseItem, 'seasonal') && (
                           <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-green-50 text-green-700">
                             Seasonal
                           </span>
                         )}
-                        {hasTag(item, 'exotic') && (
+                        {hasTag(baseItem, 'exotic') && (
                           <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-purple-50 text-purple-700">
                             Exotic
                           </span>
                         )}
-                        {hasTag(item, 'best_seller') && (
+                        {hasTag(baseItem, 'best_seller') && (
                           <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-amber-50 text-amber-700">
                             Best Seller
                           </span>
@@ -189,66 +266,205 @@ export function HomePage({
                         <div>
                           <button
                             type="button"
-                            onClick={() => handleAdd(item)}
-                            className="text-left text-lg font-semibold text-gray-900"
+                            onClick={() => onUpdateQty(baseItem.id, 1, selectedWeight)}
+                            className="text-left text-base font-semibold text-gray-900 line-clamp-2"
                           >
-                            {item.name}
+                            {group.name}
                           </button>
                           <p className="text-sm text-gray-600">
-                            ₹{item.price} / {item.unit}
+                            ₹{unitPrice} / {formatWeightFromGrams(selectedWeight)}
                           </p>
                         </div>
                         <span className="text-xs font-semibold text-green-700 bg-green-50 px-3 py-1 rounded-full">
                           Fresh
                         </span>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <button
-                            className="p-3 rounded-full border border-green-200 hover:bg-green-50"
-                            onClick={() => onUpdateQty(item.id, -1)}
-                            aria-label={`Remove ${item.name}`}
-                          >
-                            <Minus className="w-5 h-5 text-green-600" />
-                          </button>
-                          <span className="w-8 text-center font-semibold">
-                            {cart[item.id] ?? 0}
-                          </span>
-                          <button
-                            className="p-3 rounded-full border border-green-200 hover:bg-green-50"
-                            onClick={() => handleAdd(item)}
-                            aria-label={`Add ${item.name}`}
-                          >
-                            <Plus className="w-5 h-5 text-green-600" />
-                          </button>
+                      <div className="mt-3 flex items-start gap-3">
+                        <div className="flex-1">
+                          <p className="text-[11px] font-semibold text-gray-500 mb-1 leading-4 h-4">
+                            Weight
+                          </p>
+                          <div className="relative max-w-[130px] sm:max-w-[150px]">
+                            <select
+                              className="w-full h-9 appearance-none border border-gray-200 rounded-xl px-3 text-sm bg-white text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-200"
+                              value={selectedWeight}
+                              onChange={(event) =>
+                                handleWeightSelect(group.key, Number(event.target.value))
+                              }
+                            >
+                              {weightOptions.map((option) => (
+                                <option key={option} value={option}>
+                                  {formatWeightFromGrams(option)}
+                                </option>
+                              ))}
+                            </select>
+                            <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-gray-400">
+                              ▾
+                            </span>
+                          </div>
+                        </div>
+                        <div className="shrink-0">
+                          <p className="text-[11px] font-semibold text-gray-500 mb-1 text-center leading-4 h-4">
+                            Qty
+                          </p>
+                          <div className="flex items-center justify-between gap-1 h-9 rounded-full border border-green-200 bg-green-50/60 px-1 w-[110px]">
+                            <button
+                              className="p-2 rounded-full hover:bg-white"
+                              onClick={() => onUpdateQty(baseItem.id, -1, selectedWeight)}
+                              aria-label={`Remove ${group.name}`}
+                            >
+                              <Minus className="w-4 h-4 text-green-600" />
+                            </button>
+                            <span className="w-7 text-center text-sm font-semibold text-gray-900">
+                              {qty}
+                            </span>
+                            <button
+                              className="p-2 rounded-full hover:bg-white"
+                              onClick={() => onUpdateQty(baseItem.id, 1, selectedWeight)}
+                              aria-label={`Add ${group.name}`}
+                            >
+                              <Plus className="w-4 h-4 text-green-600" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
               <div>
-                <h4 className="text-2xl font-semibold mb-4">Dry Fruits</h4>
-                <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {catalog.dry.map((item) => (
+                <h4 className="text-2xl font-semibold mb-4">Exotic Fruits</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                  {exoticFruitGroups.map((group) => {
+                    const baseItem = getBaseVariant(group);
+                    const selectedWeight = getSelectedWeight(group);
+                    const pricePerKg = getPricePerKg(baseItem);
+                    const unitPrice = Math.round(pricePerKg * (selectedWeight / 1000));
+                    const qty = cart[`${baseItem.id}::${selectedWeight}`] ?? 0;
+                    return (
                     <div
-                      key={item.id}
-                      className="bg-white rounded-3xl p-5 border border-green-100 shadow-sm transition sm:hover:shadow-lg sm:hover:-translate-y-0.5"
+                      key={group.key}
+                      className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-green-100 shadow-sm transition sm:hover:shadow-lg sm:hover:-translate-y-0.5"
                     >
                       <button
                         type="button"
                         className="w-full text-left"
-                        onClick={() => handleAdd(item)}
-                        aria-label={`Add ${item.name}`}
+                        onClick={() => onUpdateQty(baseItem.id, 1, selectedWeight)}
+                        aria-label={`Add ${group.name}`}
                       >
                         <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-40 rounded-2xl object-cover mb-4"
+                          src={baseItem.image}
+                          alt={group.name}
+                          className="w-full h-36 sm:h-40 rounded-2xl object-cover mb-4"
                         />
                       </button>
                       <div className="flex flex-wrap gap-2 mb-3">
-                        {hasTag(item, 'best_seller') && (
+                        {hasTag(baseItem, 'premium') && (
+                          <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-purple-50 text-purple-700">
+                            Premium
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => onUpdateQty(baseItem.id, 1, selectedWeight)}
+                            className="text-left text-base font-semibold text-gray-900 line-clamp-2"
+                          >
+                            {group.name}
+                          </button>
+                          <p className="text-sm text-gray-600">
+                            ₹{unitPrice} / {formatWeightFromGrams(selectedWeight)}
+                          </p>
+                        </div>
+                        <span className="text-xs font-semibold text-purple-700 bg-purple-50 px-3 py-1 rounded-full">
+                          Exotic
+                        </span>
+                      </div>
+                      <div className="mt-3 flex items-start gap-3">
+                        <div className="flex-1">
+                          <p className="text-[11px] font-semibold text-gray-500 mb-1 leading-4 h-4">
+                            Weight
+                          </p>
+                          <div className="relative max-w-[130px] sm:max-w-[150px]">
+                            <select
+                              className="w-full h-9 appearance-none border border-gray-200 rounded-xl px-3 text-sm bg-white text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-200"
+                              value={selectedWeight}
+                              onChange={(event) =>
+                                handleWeightSelect(group.key, Number(event.target.value))
+                              }
+                            >
+                              {weightOptions.map((option) => (
+                                <option key={option} value={option}>
+                                  {formatWeightFromGrams(option)}
+                                </option>
+                              ))}
+                            </select>
+                            <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-gray-400">
+                              ▾
+                            </span>
+                          </div>
+                        </div>
+                        <div className="shrink-0">
+                          <p className="text-[11px] font-semibold text-gray-500 mb-1 text-center leading-4 h-4">
+                            Qty
+                          </p>
+                          <div className="flex items-center justify-between gap-1 h-9 rounded-full border border-green-200 bg-green-50/60 px-1 w-[110px]">
+                            <button
+                              className="p-2 rounded-full hover:bg-white"
+                              onClick={() => onUpdateQty(baseItem.id, -1, selectedWeight)}
+                              aria-label={`Remove ${group.name}`}
+                            >
+                              <Minus className="w-4 h-4 text-green-600" />
+                            </button>
+                            <span className="w-7 text-center text-sm font-semibold text-gray-900">
+                              {qty}
+                            </span>
+                            <button
+                              className="p-2 rounded-full hover:bg-white"
+                              onClick={() => onUpdateQty(baseItem.id, 1, selectedWeight)}
+                              aria-label={`Add ${group.name}`}
+                            >
+                              <Plus className="w-4 h-4 text-green-600" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <h4 className="text-2xl font-semibold mb-4">Dry Fruits</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                  {dryGroups.map((group) => {
+                    const baseItem = getBaseVariant(group);
+                    const selectedWeight = getSelectedWeight(group);
+                    const pricePerKg = getPricePerKg(baseItem);
+                    const unitPrice = Math.round(pricePerKg * (selectedWeight / 1000));
+                    const qty = cart[`${baseItem.id}::${selectedWeight}`] ?? 0;
+                    return (
+                    <div
+                      key={group.key}
+                      className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-green-100 shadow-sm transition sm:hover:shadow-lg sm:hover:-translate-y-0.5"
+                    >
+                      <button
+                        type="button"
+                        className="w-full text-left"
+                        onClick={() => onUpdateQty(baseItem.id, 1, selectedWeight)}
+                        aria-label={`Add ${group.name}`}
+                      >
+                        <img
+                          src={baseItem.image}
+                          alt={group.name}
+                          className="w-full h-36 sm:h-40 rounded-2xl object-cover mb-4"
+                        />
+                      </button>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {hasTag(baseItem, 'best_seller') && (
                           <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-amber-50 text-amber-700">
                             Best Seller
                           </span>
@@ -258,42 +474,217 @@ export function HomePage({
                         <div>
                           <button
                             type="button"
-                            onClick={() => handleAdd(item)}
-                            className="text-left text-lg font-semibold text-gray-900"
+                            onClick={() => onUpdateQty(baseItem.id, 1, selectedWeight)}
+                            className="text-left text-base font-semibold text-gray-900 line-clamp-2"
                           >
-                            {item.name}
+                            {group.name}
                           </button>
                           <p className="text-sm text-gray-600">
-                            ₹{item.price} / {item.unit}
+                            ₹{unitPrice} / {formatWeightFromGrams(selectedWeight)}
                           </p>
                         </div>
                         <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-1 rounded-full">
                           Dry
                         </span>
                       </div>
+                      <div className="mt-3 flex items-start gap-3">
+                        <div className="flex-1">
+                          <p className="text-[11px] font-semibold text-gray-500 mb-1 leading-4 h-4">
+                            Weight
+                          </p>
+                          <div className="relative max-w-[130px] sm:max-w-[150px]">
+                            <select
+                              className="w-full h-9 appearance-none border border-gray-200 rounded-xl px-3 text-sm bg-white text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-200"
+                              value={selectedWeight}
+                              onChange={(event) =>
+                                handleWeightSelect(group.key, Number(event.target.value))
+                              }
+                            >
+                              {weightOptions.map((option) => (
+                                <option key={option} value={option}>
+                                  {formatWeightFromGrams(option)}
+                                </option>
+                              ))}
+                            </select>
+                            <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-gray-400">
+                              ▾
+                            </span>
+                          </div>
+                        </div>
+                        <div className="shrink-0">
+                          <p className="text-[11px] font-semibold text-gray-500 mb-1 text-center leading-4 h-4">
+                            Qty
+                          </p>
+                          <div className="flex items-center justify-between gap-1 h-9 rounded-full border border-green-200 bg-green-50/60 px-1 w-[110px]">
+                            <button
+                              className="p-2 rounded-full hover:bg-white"
+                              onClick={() => onUpdateQty(baseItem.id, -1, selectedWeight)}
+                              aria-label={`Remove ${group.name}`}
+                            >
+                              <Minus className="w-4 h-4 text-green-600" />
+                            </button>
+                            <span className="w-7 text-center text-sm font-semibold text-gray-900">
+                              {qty}
+                            </span>
+                            <button
+                              className="p-2 rounded-full hover:bg-white"
+                              onClick={() => onUpdateQty(baseItem.id, 1, selectedWeight)}
+                              aria-label={`Add ${group.name}`}
+                            >
+                              <Plus className="w-4 h-4 text-green-600" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <h4 className="text-2xl font-semibold mb-4">Combos & Bundles</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                  {comboGroups.map((group) => {
+                    const baseItem = getBaseVariant(group);
+                    const qty = cart[baseItem.id] ?? 0;
+                    return (
+                    <div
+                      key={group.key}
+                      className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-green-100 shadow-sm transition sm:hover:shadow-lg sm:hover:-translate-y-0.5"
+                    >
+                      <button
+                        type="button"
+                        className="w-full text-left"
+                        onClick={() => onUpdateQty(baseItem.id, 1)}
+                        aria-label={`Add ${group.name}`}
+                      >
+                        <img
+                          src={baseItem.image}
+                          alt={group.name}
+                          className="w-full h-36 sm:h-40 rounded-2xl object-cover mb-4"
+                        />
+                      </button>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {hasTag(baseItem, 'premium') && (
+                          <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-indigo-50 text-indigo-700">
+                            Premium
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => onUpdateQty(baseItem.id, 1)}
+                            className="text-left text-base font-semibold text-gray-900 line-clamp-2"
+                          >
+                            {group.name}
+                          </button>
+                          <p className="text-sm text-gray-600">
+                            ₹{baseItem.price} / {formatWeightLabel(baseItem)}
+                          </p>
+                        </div>
+                        <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full">
+                          Combo
+                        </span>
+                      </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <button
                             className="p-3 rounded-full border border-green-200 hover:bg-green-50"
-                            onClick={() => onUpdateQty(item.id, -1)}
-                            aria-label={`Remove ${item.name}`}
+                            onClick={() => onUpdateQty(baseItem.id, -1)}
+                            aria-label={`Remove ${group.name}`}
                           >
                             <Minus className="w-5 h-5 text-green-600" />
                           </button>
                           <span className="w-8 text-center font-semibold">
-                            {cart[item.id] ?? 0}
+                            {qty}
                           </span>
                           <button
                             className="p-3 rounded-full border border-green-200 hover:bg-green-50"
-                            onClick={() => handleAdd(item)}
-                            aria-label={`Add ${item.name}`}
+                            onClick={() => onUpdateQty(baseItem.id, 1)}
+                            aria-label={`Add ${group.name}`}
                           >
                             <Plus className="w-5 h-5 text-green-600" />
                           </button>
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <h4 className="text-2xl font-semibold mb-4">Subscription Bowls</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                  {subscriptionGroups.map((group) => {
+                    const baseItem = getBaseVariant(group);
+                    const qty = cart[baseItem.id] ?? 0;
+                    return (
+                    <div
+                      key={group.key}
+                      className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-green-100 shadow-sm transition sm:hover:shadow-lg sm:hover:-translate-y-0.5"
+                    >
+                      <button
+                        type="button"
+                        className="w-full text-left"
+                        onClick={() => onUpdateQty(baseItem.id, 1)}
+                        aria-label={`Add ${group.name}`}
+                      >
+                        <img
+                          src={baseItem.image}
+                          alt={group.name}
+                          className="w-full h-36 sm:h-40 rounded-2xl object-cover mb-4"
+                        />
+                      </button>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {hasTag(baseItem, 'daily_use') && (
+                          <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-green-50 text-green-700">
+                            Daily Use
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => onUpdateQty(baseItem.id, 1)}
+                            className="text-left text-base font-semibold text-gray-900 line-clamp-2"
+                          >
+                            {group.name}
+                          </button>
+                          <p className="text-sm text-gray-600">
+                            ₹{baseItem.price} / {formatWeightLabel(baseItem)}
+                          </p>
+                        </div>
+                        <span className="text-xs font-semibold text-green-700 bg-green-50 px-3 py-1 rounded-full">
+                          Bowl
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <button
+                            className="p-3 rounded-full border border-green-200 hover:bg-green-50"
+                            onClick={() => onUpdateQty(baseItem.id, -1)}
+                            aria-label={`Remove ${group.name}`}
+                          >
+                            <Minus className="w-5 h-5 text-green-600" />
+                          </button>
+                          <span className="w-8 text-center font-semibold">
+                            {qty}
+                          </span>
+                          <button
+                            className="p-3 rounded-full border border-green-200 hover:bg-green-50"
+                            onClick={() => onUpdateQty(baseItem.id, 1)}
+                            aria-label={`Add ${group.name}`}
+                          >
+                            <Plus className="w-5 h-5 text-green-600" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -342,13 +733,6 @@ export function HomePage({
             >
               View Cart ({cartCount})
             </button>
-          </div>
-        </div>
-      )}
-      {toastMessage && (
-        <div className="fixed bottom-32 inset-x-0 z-40 flex justify-center px-4 sm:bottom-6">
-          <div className="bg-gray-900 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg">
-            {toastMessage}
           </div>
         </div>
       )}

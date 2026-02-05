@@ -148,7 +148,7 @@ router.post('/', async (req, res) => {
     if (orderType === 'store') {
       const itemIds = payload.items.map((item) => item.id).filter(Boolean);
       const { rows: inventoryRows } = await client.query(
-        'SELECT id, name, price FROM inventory WHERE id = ANY($1::text[])',
+        'SELECT id, name, price, weight_grams, category FROM inventory WHERE id = ANY($1::text[])',
         [itemIds]
       );
       const inventoryById = inventoryRows.reduce((acc, item) => {
@@ -162,12 +162,36 @@ router.post('/', async (req, res) => {
         if (!inventoryItem || !Number.isInteger(qty) || qty <= 0) {
           throw new Error('Invalid order item');
         }
-        const price = Number(inventoryItem.price);
+        const isWeighted = inventoryItem.category === 'fruit' || inventoryItem.category === 'dry';
+        if (!isWeighted) {
+          const price = Number(inventoryItem.price);
+          const total = price * qty;
+          computedTotal += total;
+          return {
+            id: item.id,
+            name: inventoryItem.name,
+            qty,
+            price,
+            total,
+          };
+        }
+
+        const weightGramsRaw = Number(item.weightGrams);
+        const weightGrams = Number.isFinite(weightGramsRaw) && weightGramsRaw > 0 ? weightGramsRaw : 1000;
+        const allowedWeights = new Set([250, 500, 1000]);
+        if (!allowedWeights.has(weightGrams)) {
+          throw new Error('Invalid order item');
+        }
+        const pricePerKg = inventoryItem.weight_grams
+          ? Number(inventoryItem.price) / (Number(inventoryItem.weight_grams) / 1000)
+          : Number(inventoryItem.price);
+        const price = Math.round(pricePerKg * (weightGrams / 1000));
         const total = price * qty;
         computedTotal += total;
+        const weightLabel = weightGrams >= 1000 ? `${weightGrams / 1000} kg` : `${weightGrams} gm`;
         return {
           id: item.id,
-          name: inventoryItem.name,
+          name: `${inventoryItem.name} (${weightLabel})`,
           qty,
           price,
           total,

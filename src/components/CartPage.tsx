@@ -23,7 +23,7 @@ type CartPageProps = {
   onOpenAuth: () => void;
   onStartGuestCheckout: () => void;
   onCustomerLogout: () => void;
-  onUpdateQty: (id: string, delta: number) => void;
+  onUpdateQty: (id: string, delta: number, weightGrams?: number) => void;
   onNameChange: (value: string) => void;
   onPhoneChange: (value: string) => void;
   onAddressChange: (value: string) => void;
@@ -62,6 +62,14 @@ export function CartPage({
   const [showLocation, setShowLocation] = useState(false);
   const [cartHydrated, setCartHydrated] = useState(false);
   const skeletons = Array.from({ length: 3 });
+  const formatWeight = (item: StoreItem) => {
+    if (item.weightGrams) {
+      return item.weightGrams >= 1000
+        ? `${item.weightGrams / 1000} kg`
+        : `${item.weightGrams} gm`;
+    }
+    return item.unit;
+  };
 
   useEffect(() => {
     setCartHydrated(true);
@@ -117,9 +125,14 @@ export function CartPage({
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex items-center justify-between">
                     <div>
-                      <p className="font-semibold text-gray-900">{item.name}</p>
+                      <p className="font-semibold text-gray-900">
+                        {item.name}
+                        <span className="ml-2 text-xs text-gray-500 font-medium">
+                          {formatWeight(item)}
+                        </span>
+                      </p>
                       <p className="text-sm text-gray-600">
-                        {item.qty} x ₹{item.price}
+                        {item.qty} x ₹{item.price} ({formatWeight(item)})
                       </p>
                     </div>
                     <div className="text-right">
@@ -127,14 +140,14 @@ export function CartPage({
                       <div className="flex items-center gap-2 justify-end mt-2">
                         <button
                           className="p-3 rounded-full border border-green-200 hover:bg-green-50"
-                          onClick={() => onUpdateQty(item.id, -1)}
+                          onClick={() => onUpdateQty(item.id, -1, item.weightGrams)}
                           aria-label={`Remove ${item.name}`}
                         >
                           <Minus className="w-5 h-5 text-green-600" />
                         </button>
                         <button
                           className="p-3 rounded-full border border-green-200 hover:bg-green-50"
-                          onClick={() => onUpdateQty(item.id, 1)}
+                          onClick={() => onUpdateQty(item.id, 1, item.weightGrams)}
                           aria-label={`Add ${item.name}`}
                         >
                           <Plus className="w-5 h-5 text-green-600" />
@@ -162,7 +175,7 @@ export function CartPage({
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 flex flex-col items-start justify-center">
               <h3 className="text-lg font-semibold mb-2">Ready to shop?</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Add fresh fruits or dry fruits to continue checkout.
+                Add fruits, dry fruits, or combos to continue checkout.
               </p>
               <button
                 type="button"

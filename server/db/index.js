@@ -1,6 +1,3 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import pg from 'pg';
 import { config } from '../config.js';
 
@@ -14,18 +11,16 @@ export const pool = new Pool({
   connectionString: config.DATABASE_URL,
 });
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const dataDir = path.resolve(__dirname, '../../data');
-const inventorySeedPath = path.join(dataDir, 'inventory.json');
-
 export const initDb = async () => {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS inventory (
       id TEXT PRIMARY KEY,
+      sku TEXT NOT NULL,
       name TEXT NOT NULL,
       category TEXT NOT NULL,
+      subcategory TEXT,
       unit TEXT NOT NULL,
+      weight_grams INTEGER,
       price INTEGER NOT NULL,
       image TEXT NOT NULL,
       tags TEXT[] NOT NULL DEFAULT '{}'
@@ -69,31 +64,6 @@ export const initDb = async () => {
     );
   `);
 
-  const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM inventory');
-  if (rows[0]?.count === 0) {
-    try {
-      const seedRaw = await fs.readFile(inventorySeedPath, 'utf-8');
-      const seed = JSON.parse(seedRaw);
-      if (Array.isArray(seed)) {
-        const insert =
-          'INSERT INTO inventory (id, name, category, unit, price, image, tags) VALUES ($1, $2, $3, $4, $5, $6, $7)';
-        for (const item of seed) {
-          await pool.query(insert, [
-            item.id,
-            item.name,
-            item.category,
-            item.unit,
-            item.price,
-            item.image,
-            Array.isArray(item.tags) ? item.tags : [],
-          ]);
-        }
-      }
-    } catch {
-      // If seed fails, keep inventory empty for manual setup.
-    }
-  }
-
   await pool.query(`
     ALTER TABLE orders
       ADD COLUMN IF NOT EXISTS location_lat DOUBLE PRECISION;
@@ -109,5 +79,11 @@ export const initDb = async () => {
       ADD COLUMN IF NOT EXISTS access_hash TEXT;
     ALTER TABLE inventory
       ADD COLUMN IF NOT EXISTS tags TEXT[] DEFAULT '{}';
+    ALTER TABLE inventory
+      ADD COLUMN IF NOT EXISTS sku TEXT;
+    ALTER TABLE inventory
+      ADD COLUMN IF NOT EXISTS subcategory TEXT;
+    ALTER TABLE inventory
+      ADD COLUMN IF NOT EXISTS weight_grams INTEGER;
   `);
 };
