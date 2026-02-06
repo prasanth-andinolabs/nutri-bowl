@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Instagram, MessageCircle, Phone } from 'lucide-react';
 import type { Order, StoreItem } from './types';
 import { Header } from './components/Header';
+import { PwaInstallBanner } from './components/PwaInstallBanner';
 import { CartPage } from './components/CartPage';
 import { AuthModal } from './components/AuthModal';
 import { OrderPopup } from './components/OrderPopup';
@@ -73,10 +74,12 @@ function App() {
     }
   }, [customerProfile, setIsGuestCheckout]);
 
+  const [alternatePhone, setAlternatePhone] = useState('');
   const handleCustomerLogout = () => {
     customerLogout();
     setCustomerName('');
     setPhone('');
+    setAlternatePhone('');
     setIsGuestCheckout(true);
   };
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -367,7 +370,9 @@ function App() {
 
   const submitOrder = async (payload: Record<string, unknown>, type: 'subscription' | 'store') => {
     const orderName = customerProfile?.name || customerName.trim();
-    const rawPhone = customerProfile?.phone || phone.trim();
+    const rawPhone = customerProfile
+      ? (alternatePhone.trim() || customerProfile.phone)
+      : phone.trim();
     if (!orderName || !rawPhone || !address.trim()) {
       setSubmitError('Please add name, phone number, and delivery address.');
       return;
@@ -401,6 +406,7 @@ function App() {
         setCustomerName('');
         setPhone('');
       }
+      setAlternatePhone('');
       setIsGuestCheckout(false);
       setAddress('');
       setLocationCoords(null);
@@ -480,6 +486,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
+      {!isAdminRoute && <PwaInstallBanner />}
       <Header
         isAdminRoute={isAdminRoute}
         isOrdersRoute={isOrdersRoute}
@@ -491,13 +498,7 @@ function App() {
         isGuestCheckout={isGuestCheckout}
         onNavigate={navigateTo}
         onCartClick={() => {
-          if (isCartRoute) {
-            return;
-          }
-          navigateTo('/cart');
-          if (!customerProfile && !isGuestCheckout) {
-            openAuthModal('signin');
-          }
+          if (!isCartRoute) navigateTo('/cart');
         }}
         onOpenAuth={() => openAuthModal('signin')}
         onCustomerLogout={handleCustomerLogout}
@@ -541,10 +542,11 @@ function App() {
           cartCount={cartCount}
           cartTotal={cartTotal}
           customerProfile={customerProfile}
-          isGuestCheckout={isGuestCheckout}
           showAuthModal={showAuthModal}
           customerName={customerName}
           phone={phone}
+          alternatePhone={alternatePhone}
+          onAlternatePhoneChange={setAlternatePhone}
           address={address}
           locationCoords={locationCoords}
           locationError={locationError}
@@ -554,7 +556,6 @@ function App() {
           storePlaced={storePlaced}
           onBackToShop={() => navigateTo('/')}
           onOpenAuth={() => openAuthModal('signin')}
-          onStartGuestCheckout={() => setIsGuestCheckout(true)}
           onCustomerLogout={handleCustomerLogout}
           onUpdateQty={updateQty}
           onNameChange={setCustomerName}
@@ -621,13 +622,7 @@ function App() {
           cartTotal={cartTotal}
           onUpdateQty={updateQty}
           onGoToCart={() => {
-            if (isCartRoute) {
-              return;
-            }
-            navigateTo('/cart');
-            if (!customerProfile && !isGuestCheckout) {
-              openAuthModal('signin');
-            }
+            if (!isCartRoute) navigateTo('/cart');
           }}
           onGoToOrders={() => navigateTo('/orders')}
           onGoToSubscriptions={() => navigateTo('/subscriptions')}
@@ -669,9 +664,6 @@ function App() {
         }}
         onClose={() => {
           closeAuthModal();
-          if (isCartRoute && !customerProfile && !isGuestCheckout) {
-            navigateTo('/');
-          }
         }}
         onGuest={() => {
           continueAsGuest();
@@ -687,13 +679,7 @@ function App() {
           cartCount={cartCount}
           onNavigate={navigateTo}
           onCartClick={() => {
-            if (isCartRoute) {
-              return;
-            }
-            navigateTo('/cart');
-            if (!customerProfile && !isGuestCheckout) {
-              openAuthModal('signin');
-            }
+            if (!isCartRoute) navigateTo('/cart');
           }}
         />
       )}
