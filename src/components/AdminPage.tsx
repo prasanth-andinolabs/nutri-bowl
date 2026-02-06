@@ -383,97 +383,6 @@ export function AdminPage({
     }
   };
 
-  const normalizeItemName = (value: string) =>
-    value
-      .toLowerCase()
-      .replace(/\([^)]*\)/g, '')
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-  const imageMap = new Map<string, string>([
-    ['apple', 'https://images.pexels.com/photos/102104/pexels-photo-102104.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['banana', 'https://images.pexels.com/photos/616833/pexels-photo-616833.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['orange', 'https://images.pexels.com/photos/161559/background-bitter-breakfast-bright-161559.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['grapes', 'https://images.pexels.com/photos/708777/pexels-photo-708777.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['pomegranate', 'https://images.pexels.com/photos/70841/pomegranate-fruit-ruby-red-70841.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['papaya', 'https://images.pexels.com/photos/5945841/pexels-photo-5945841.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['watermelon', 'https://images.pexels.com/photos/1313267/pexels-photo-1313267.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['muskmelon', 'https://images.pexels.com/photos/547263/pexels-photo-547263.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['pineapple', 'https://images.pexels.com/photos/1697204/pexels-photo-1697204.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['guava', 'https://images.pexels.com/photos/4033148/pexels-photo-4033148.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['sweet lime', 'https://images.pexels.com/photos/161559/background-bitter-breakfast-bright-161559.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['mosambi', 'https://images.pexels.com/photos/161559/background-bitter-breakfast-bright-161559.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['pear', 'https://images.pexels.com/photos/568471/pexels-photo-568471.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['plum', 'https://images.pexels.com/photos/5945782/pexels-photo-5945782.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['sapota', 'https://images.pexels.com/photos/5945755/pexels-photo-5945755.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['chikoo', 'https://images.pexels.com/photos/5945755/pexels-photo-5945755.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['dragon fruit', 'https://images.pexels.com/photos/5611701/pexels-photo-5611701.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['kiwi', 'https://images.pexels.com/photos/5945763/pexels-photo-5945763.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['avocado', 'https://images.pexels.com/photos/557659/pexels-photo-557659.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['blueberries', 'https://images.pexels.com/photos/51312/blueberries-berries-fruit-51312.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['strawberries', 'https://images.pexels.com/photos/89778/strawberries-frisch-ripe-sweet-89778.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['raspberries', 'https://images.pexels.com/photos/52534/raspberries-fruits-berries-52534.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['blackberries', 'https://images.pexels.com/photos/52533/blackberries-berries-fruits-52533.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['passion fruit', 'https://images.pexels.com/photos/5945832/pexels-photo-5945832.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['figs', 'https://images.pexels.com/photos/1459339/pexels-photo-1459339.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['cherries', 'https://images.pexels.com/photos/3080/food-fruit-kitchen-sweet.jpg?auto=compress&cs=tinysrgb&w=600'],
-    ['gooseberries', 'https://images.pexels.com/photos/51312/blueberries-berries-fruit-51312.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['cranberries', 'https://images.pexels.com/photos/1171170/pexels-photo-1171170.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['mangosteen', 'https://images.pexels.com/photos/5945757/pexels-photo-5945757.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['rambutan', 'https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['almonds', 'https://images.pexels.com/photos/1295572/pexels-photo-1295572.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['cashews', 'https://images.pexels.com/photos/1435907/pexels-photo-1435907.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['pistachios', 'https://images.pexels.com/photos/5430892/pexels-photo-5430892.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['walnuts', 'https://images.pexels.com/photos/1295571/pexels-photo-1295571.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['raisins', 'https://images.pexels.com/photos/616404/pexels-photo-616404.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['dates', 'https://images.pexels.com/photos/259810/pexels-photo-259810.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['dried figs', 'https://images.pexels.com/photos/1459339/pexels-photo-1459339.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['anjeer', 'https://images.pexels.com/photos/1459339/pexels-photo-1459339.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['dried apricots', 'https://images.pexels.com/photos/2365572/pexels-photo-2365572.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['makhana', 'https://images.pexels.com/photos/5945817/pexels-photo-5945817.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['fox nuts', 'https://images.pexels.com/photos/5945817/pexels-photo-5945817.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['hazelnuts', 'https://images.pexels.com/photos/810510/pexels-photo-810510.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['pecans', 'https://images.pexels.com/photos/1295571/pexels-photo-1295571.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['brazil nuts', 'https://images.pexels.com/photos/1295571/pexels-photo-1295571.jpeg?auto=compress&cs=tinysrgb&w=600'],
-    ['pine nuts', 'https://images.pexels.com/photos/1295571/pexels-photo-1295571.jpeg?auto=compress&cs=tinysrgb&w=600'],
-  ]);
-
-  const buildImageUrl = (item: StoreItem) => {
-    const baseName = normalizeItemName(item.name);
-    const directMatch = imageMap.get(baseName);
-    if (directMatch) {
-      return directMatch;
-    }
-    const fallbackMatch =
-      Array.from(imageMap.entries()).find(([key]) => baseName.includes(key))?.[1] ?? '';
-    if (fallbackMatch) {
-      return fallbackMatch;
-    }
-    return item.image;
-  };
-
-  const handleAutoMatchImages = () => {
-    let updated = 0;
-    let skipped = 0;
-    setCatalogDraft((prev) =>
-      prev.map((item) => {
-        const nextImage = buildImageUrl(item);
-        if (nextImage && nextImage !== item.image) {
-          updated += 1;
-          return { ...item, image: nextImage };
-        }
-        skipped += 1;
-        return item;
-      })
-    );
-    setCatalogError(
-      updated
-        ? `Auto-matched ${updated} images. ${skipped} need manual review.`
-        : 'No matching images found. Please update manually.'
-    );
-  };
-
   const renderCatalogueManager = () => (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
@@ -485,13 +394,6 @@ export function AdminPage({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              className="text-sm text-green-700 border border-green-200 px-3 py-2 rounded-full hover:bg-green-50"
-              onClick={handleAutoMatchImages}
-              disabled={catalogDraft.length === 0}
-            >
-              Auto-match images
-            </button>
             <button
               className="text-sm text-green-700 border border-green-200 px-3 py-2 rounded-full hover:bg-green-50"
               onClick={() => setShowCatalogueManager(false)}
