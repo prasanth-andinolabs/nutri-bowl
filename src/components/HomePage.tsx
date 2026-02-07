@@ -198,7 +198,7 @@ export function HomePage({
               <div>
                 <h4 className="text-2xl font-semibold mb-4">Regular Fruits</h4>
                 {inventoryLoading && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-6">
                     {skeletons.map((_, index) => (
                       <div
                         key={`fresh-skeleton-${index}`}
@@ -211,7 +211,7 @@ export function HomePage({
                     ))}
                   </div>
                 )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {regularFruitGroups.map((group) => {
                     const baseItem = getBaseVariant(group);
                     const selectedWeight = getSelectedWeight(group);
@@ -224,18 +224,13 @@ export function HomePage({
                       className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-green-100 shadow-sm transition sm:hover:shadow-lg sm:hover:-translate-y-0.5"
                     >
                       <div className="relative mb-4">
-                        <button
-                          type="button"
-                          className="w-full text-left block"
-                          onClick={() => onUpdateQty(baseItem.id, 1, selectedWeight)}
-                          aria-label={`Add ${group.name}`}
-                        >
+                        <div className="w-full block">
                           <img
                             src={baseItem.image}
                             alt={group.name}
                             className="w-full h-36 sm:h-40 rounded-2xl object-contain bg-gray-50"
                           />
-                        </button>
+                        </div>
                         <div className="absolute top-2 left-2 flex flex-wrap gap-2">
                           {hasTag(baseItem, 'seasonal') && (
                             <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-green-50/95 text-green-700 shadow-sm">
@@ -256,13 +251,9 @@ export function HomePage({
                       </div>
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <button
-                            type="button"
-                            onClick={() => onUpdateQty(baseItem.id, 1, selectedWeight)}
-                            className="text-left text-base font-semibold text-gray-900 line-clamp-2"
-                          >
+                          <p className="text-left text-base font-semibold text-gray-900 line-clamp-2">
                             {group.name}
-                          </button>
+                          </p>
                           <p className="text-sm text-gray-600">
                             {formatPriceWithAmount(unitPrice, formatWeightFromGrams(selectedWeight))}
                           </p>
@@ -327,7 +318,7 @@ export function HomePage({
               </div>
               <div>
                 <h4 className="text-2xl font-semibold mb-4">Exotic Fruits</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {exoticFruitGroups.map((group) => {
                     const baseItem = getBaseVariant(group);
                     const selectedWeight = getSelectedWeight(group);
@@ -340,18 +331,13 @@ export function HomePage({
                       className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-green-100 shadow-sm transition sm:hover:shadow-lg sm:hover:-translate-y-0.5"
                     >
                       <div className="relative mb-4">
-                        <button
-                          type="button"
-                          className="w-full text-left block"
-                          onClick={() => onUpdateQty(baseItem.id, 1, selectedWeight)}
-                          aria-label={`Add ${group.name}`}
-                        >
+                        <div className="w-full block">
                           <img
                             src={baseItem.image}
                             alt={group.name}
                             className="w-full h-36 sm:h-40 rounded-2xl object-contain bg-gray-50"
                           />
-                        </button>
+                        </div>
                         <div className="absolute top-2 left-2 flex flex-wrap gap-2">
                           {hasTag(baseItem, 'premium') && (
                             <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-purple-50/95 text-purple-700 shadow-sm">
@@ -362,13 +348,9 @@ export function HomePage({
                       </div>
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <button
-                            type="button"
-                            onClick={() => onUpdateQty(baseItem.id, 1, selectedWeight)}
-                            className="text-left text-base font-semibold text-gray-900 line-clamp-2"
-                          >
+                          <p className="text-left text-base font-semibold text-gray-900 line-clamp-2">
                             {group.name}
-                          </button>
+                          </p>
                           <p className="text-sm text-gray-600">
                             {formatPriceWithAmount(unitPrice, formatWeightFromGrams(selectedWeight))}
                           </p>
@@ -433,7 +415,7 @@ export function HomePage({
               </div>
               <div>
                 <h4 className="text-2xl font-semibold mb-4">Dry Fruits</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {dryGroups.map((group) => {
                     const baseItem = getBaseVariant(group);
                     const selectedWeight = getSelectedWeight(group);
@@ -446,18 +428,13 @@ export function HomePage({
                       className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-green-100 shadow-sm transition sm:hover:shadow-lg sm:hover:-translate-y-0.5"
                     >
                       <div className="relative mb-4">
-                        <button
-                          type="button"
-                          className="w-full text-left block"
-                          onClick={() => onUpdateQty(baseItem.id, 1, selectedWeight)}
-                          aria-label={`Add ${group.name}`}
-                        >
+                        <div className="w-full block">
                           <img
                             src={baseItem.image}
                             alt={group.name}
                             className="w-full h-36 sm:h-40 rounded-2xl object-contain bg-gray-50"
                           />
-                        </button>
+                        </div>
                         <div className="absolute top-2 left-2 flex flex-wrap gap-2">
                           {hasTag(baseItem, 'best_seller') && (
                             <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-amber-50/95 text-amber-700 shadow-sm">
@@ -468,13 +445,9 @@ export function HomePage({
                       </div>
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <button
-                            type="button"
-                            onClick={() => onUpdateQty(baseItem.id, 1, selectedWeight)}
-                            className="text-left text-base font-semibold text-gray-900 line-clamp-2"
-                          >
+                          <p className="text-left text-base font-semibold text-gray-900 line-clamp-2">
                             {group.name}
-                          </button>
+                          </p>
                           <p className="text-sm text-gray-600">
                             {formatPriceWithAmount(unitPrice, formatWeightFromGrams(selectedWeight))}
                           </p>
@@ -539,7 +512,7 @@ export function HomePage({
               </div>
               <div>
                 <h4 className="text-2xl font-semibold mb-4">Combos & Bundles</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {comboGroups.map((group) => {
                     const baseItem = getBaseVariant(group);
                     const qty = cart[baseItem.id] ?? 0;
@@ -549,18 +522,13 @@ export function HomePage({
                       className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-green-100 shadow-sm transition sm:hover:shadow-lg sm:hover:-translate-y-0.5"
                     >
                       <div className="relative mb-4">
-                        <button
-                          type="button"
-                          className="w-full text-left block"
-                          onClick={() => onUpdateQty(baseItem.id, 1)}
-                          aria-label={`Add ${group.name}`}
-                        >
+                        <div className="w-full block">
                           <img
                             src={baseItem.image}
                             alt={group.name}
                             className="w-full h-36 sm:h-40 rounded-2xl object-contain bg-gray-50"
                           />
-                        </button>
+                        </div>
                         <div className="absolute top-2 left-2 flex flex-wrap gap-2">
                           {hasTag(baseItem, 'premium') && (
                             <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-indigo-50/95 text-indigo-700 shadow-sm">
@@ -571,13 +539,9 @@ export function HomePage({
                       </div>
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <button
-                            type="button"
-                            onClick={() => onUpdateQty(baseItem.id, 1)}
-                            className="text-left text-base font-semibold text-gray-900 line-clamp-2"
-                          >
+                          <p className="text-left text-base font-semibold text-gray-900 line-clamp-2">
                             {group.name}
-                          </button>
+                          </p>
                           <p className="text-sm text-gray-600">
                             {formatPriceWithAmount(baseItem.price, formatAmountWithUnit(baseItem))}
                           </p>
@@ -614,7 +578,7 @@ export function HomePage({
               </div>
               <div>
                 <h4 className="text-2xl font-semibold mb-4">Subscription Bowls</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {subscriptionGroups.map((group) => {
                     const baseItem = getBaseVariant(group);
                     const qty = cart[baseItem.id] ?? 0;
@@ -624,18 +588,13 @@ export function HomePage({
                       className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-green-100 shadow-sm transition sm:hover:shadow-lg sm:hover:-translate-y-0.5"
                     >
                       <div className="relative mb-4">
-                        <button
-                          type="button"
-                          className="w-full text-left block"
-                          onClick={() => onUpdateQty(baseItem.id, 1)}
-                          aria-label={`Add ${group.name}`}
-                        >
+                        <div className="w-full block">
                           <img
                             src={baseItem.image}
                             alt={group.name}
                             className="w-full h-36 sm:h-40 rounded-2xl object-contain bg-gray-50"
                           />
-                        </button>
+                        </div>
                         <div className="absolute top-2 left-2 flex flex-wrap gap-2">
                           {hasTag(baseItem, 'daily_use') && (
                             <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-green-50/95 text-green-700 shadow-sm">
@@ -646,13 +605,9 @@ export function HomePage({
                       </div>
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <button
-                            type="button"
-                            onClick={() => onUpdateQty(baseItem.id, 1)}
-                            className="text-left text-base font-semibold text-gray-900 line-clamp-2"
-                          >
+                          <p className="text-left text-base font-semibold text-gray-900 line-clamp-2">
                             {group.name}
-                          </button>
+                          </p>
                           <p className="text-sm text-gray-600">
                             {formatPriceWithAmount(baseItem.price, formatAmountWithUnit(baseItem))}
                           </p>
